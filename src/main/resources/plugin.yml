@@ -1,0 +1,8 @@
+name: OakEnchants
+version: ${project.version}
+main: com.oakleyplugins.oakenchants.OakEnchants
+api-version: 1.17
+authors: [ OakleyCord ]
+commands:
+  test:
+    description: test
