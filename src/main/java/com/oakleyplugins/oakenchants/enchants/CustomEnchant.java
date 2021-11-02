@@ -91,7 +91,7 @@ public class CustomEnchant extends Enchantment {
 
     @Override
     public boolean canEnchantItem(ItemStack item) {
-        return Arrays.stream(target).allMatch(t -> t.includes(item.getType()));
+        return Arrays.stream(target).anyMatch(t -> t.includes(item.getType()));
     }
 
 }
