@@ -40,7 +40,7 @@ public final class OakEnchants extends JavaPlugin {
 
     public void homingTick(Projectile homing) {
         Bukkit.getScheduler().runTask(PLUGIN, () -> {
-            if (homing.getTicksLived() > 140 || !homing.isValid()) {
+            if (homing.getTicksLived() > 200 || !homing.isValid()) {
                 HOMING.remove(homing);
             }
         });
@@ -48,7 +48,7 @@ public final class OakEnchants extends JavaPlugin {
         LivingEntity shooter = (LivingEntity) homing.getShooter();
         Entity cEntity = null;
         double cDist = Double.MAX_VALUE;
-        for (Entity e : homing.getNearbyEntities(7, 7, 7)) {
+        for (Entity e : homing.getNearbyEntities(10, 10, 10)) {
             if (e == shooter) continue;
             if (!shooter.hasLineOfSight(e)) continue;
             if (!(e instanceof Player)) continue;
