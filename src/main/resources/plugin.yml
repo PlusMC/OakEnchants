@@ -3,6 +3,8 @@ version: ${project.version}
 main: com.oakleyplugins.oakenchants.OakEnchants
 api-version: 1.17
 authors: [ OakleyCord ]
+website: https://github.com/HappyCord/OakEnchants
+description: A little plugin that adds enchantments that I made :)))
 commands:
   test:
     description: test
