@@ -12,7 +12,7 @@ import java.util.Map;
 
 public class EnchantUtils {
 
-    public static void enchantCustom(ItemStack stack, int lvl, Enchantment enchant) {
+    public static void enchantCustom(ItemStack stack, int level, Enchantment enchant) {
         if (stack.getItemMeta() == null) return;
         ItemMeta meta = stack.getItemMeta();
 
@@ -24,11 +24,11 @@ public class EnchantUtils {
             str.addAll(oldLore);
         }
 
-        if(lvl <= 0) {
+        if(level <= 0) {
             meta.removeEnchant(enchant);
         } else {
-            str.add(enchant.getName() + " " + RomanNumerals(lvl));
-            stack.addUnsafeEnchantment(enchant, lvl);
+            str.add(enchant.getName() + " " + RomanNumerals(level));
+            meta.addEnchant(enchant, level, true);
         }
 
         meta.setLore(str);

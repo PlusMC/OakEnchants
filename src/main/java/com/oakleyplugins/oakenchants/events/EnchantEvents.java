@@ -45,7 +45,7 @@ public class EnchantEvents implements Listener {
                 if (!(enchant.isEnchantItem(item1) && enchant.canEnchantItem(item0))) continue;
                 ItemStack dummy = item0.clone();
                 int curLevel = item0.getEnchantmentLevel(enchant);
-                if (!(curLevel < enchant.getMaxLevel())) continue;
+                if (curLevel >= enchant.getMaxLevel()) continue;
                 int newLevel = curLevel + 1;
                 enchantCustom(dummy, newLevel, enchant);
                 anvil.setItem(2, dummy);

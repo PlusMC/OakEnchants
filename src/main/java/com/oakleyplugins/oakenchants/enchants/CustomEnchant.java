@@ -45,6 +45,7 @@ public abstract class CustomEnchant extends Enchantment {
                 new QuiteIncredible()
         );
         ENCHANTS.forEach(CustomEnchant::load);
+        register();
     }
 
     public static void unloadAll() {
