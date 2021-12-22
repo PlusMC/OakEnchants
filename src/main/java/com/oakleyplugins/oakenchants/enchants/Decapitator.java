@@ -1,27 +1,70 @@
-package com.oakleyplugins.oakenchants.Utils;
+package com.oakleyplugins.oakenchants.enchants;
 
+import com.oakleyplugins.oakenchants.OakEnchants;
+import com.oakleyplugins.oakenchants.Utils.Utils;
 import org.bukkit.*;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.enchantments.EnchantmentTarget;
+import org.bukkit.entity.*;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import java.util.Random;
 
-import static com.oakleyplugins.oakenchants.OakEnchants.PLUGIN;
+import static com.oakleyplugins.oakenchants.Utils.Utils.enchantCustom;
 import static com.oakleyplugins.oakenchants.Utils.Utils.getSkull;
 
-public class Anim {
-    public static void playDeathEffect(Player player) {
+public class Decapitator extends CustomEnchant {
+
+    public Decapitator() {
+        super("decapitator");
+    }
+
+    @Override
+    public String getName() {
+        return "Decapitator";
+    }
+
+    @Override
+    public int getMaxLevel() {
+        return 5;
+    }
+
+    @Override
+    public int getStartLevel() {
+        return 0;
+    }
+
+    @Override
+    public EnchantmentTarget[] getEnchantTargets() {
+        return new EnchantmentTarget[] { EnchantmentTarget.WEAPON, EnchantmentTarget.TOOL };
+    }
+
+    @Override
+    public boolean isEnchantItem(ItemStack stack) {
+        return stack.getType().equals(Material.END_CRYSTAL);
+    }
+
+    @Override
+    public void onDamageEntity(EntityDamageByEntityEvent e, ItemStack item, int level) {
+        if (e.getEntity() instanceof Player)
+            if (Utils.isEventFatal(e)) {
+                enchantCustom(item, level - 1, this);
+                playDeathEffect((Player) e.getEntity());
+            }
+    }
+
+
+    //anim
+    //TODO: make this not suck
+    private void playDeathEffect(Player player) {
         Location loc = player.getEyeLocation();
         World world = loc.getWorld();
         world.playSound(loc, Sound.ENTITY_ELDER_GUARDIAN_CURSE, 1f, 1f);
         createArmorStand(loc.subtract(0, 0.5, 0), getSkull(player));
     }
 
-    public static void createArmorStand(Location loc, ItemStack head) {
+    private void createArmorStand(Location loc, ItemStack head) {
         World world = loc.getWorld();
         ArmorStand stand = (ArmorStand) world.spawnEntity(loc, EntityType.ARMOR_STAND);
         stand.setVisible(false);
@@ -31,7 +74,7 @@ public class Anim {
         helixEffect(stand);
     }
 
-    public static void helixEffect(ArmorStand stand) {//double animation tornado
+    private void helixEffect(ArmorStand stand) {//double animation tornado
         Location loc = stand.getLocation();
         Random r = new Random();
         for (int i = 0; i < 20; i++) {
@@ -51,7 +94,7 @@ public class Anim {
             double z = radius * Math.sin(y * 2.1);//helix math
             Location fLoc = loc.clone().add(x, y, z); //location of where armor stand needs to be
             double finalRadius = radius;
-            Bukkit.getScheduler().runTaskLater(PLUGIN, () -> {//movement done every tick
+            Bukkit.getScheduler().runTaskLater(OakEnchants.getInstance(), () -> {//movement done every tick
                 Location rotate = stand.getLocation().clone();
                 rotate.setYaw((float) (rotate.getYaw() + (10 * (finalRadius + 2))));
                 stand.teleport(rotate);
@@ -61,7 +104,7 @@ public class Anim {
             delay++;
             //loc.getWorld().spawnParticle(Particle.BARRIER,fLoc,20); //debug
         }
-        Bukkit.getScheduler().runTaskLater(PLUGIN, () -> { //drop item after animating
+        Bukkit.getScheduler().runTaskLater(OakEnchants.getInstance(), () -> { //drop item after animating
             Location cur = stand.getEyeLocation();
             ItemStack skull = stand.getEquipment().getHelmet();
             stand.remove();
@@ -71,10 +114,9 @@ public class Anim {
         }, delay);
     }
 
-    public static void nudge(LivingEntity entity, Location loc, double strength) {
+    private void nudge(LivingEntity entity, Location loc, double strength) {
         Vector goTo = loc.toVector().subtract(entity.getLocation().toVector());
         goTo.normalize();
         entity.setVelocity(goTo.multiply(strength));
     }
-
 }

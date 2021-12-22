@@ -1,77 +1,85 @@
 package com.oakleyplugins.oakenchants.enchants;
 
-import org.bukkit.Material;
+import com.oakleyplugins.oakenchants.OakEnchants;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Consumer;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class CustomEnchant extends Enchantment {
-
-    private final String name;
-    private final int maxLvl;
-    private final EnchantmentTarget[] target;
-    private final Material enchantMaterial;
+public abstract class CustomEnchant extends Enchantment {
+    public static List<CustomEnchant> ENCHANTS;
 
 
-    private Consumer<EntityDamageByEntityEvent> onDamage;
-    private Consumer<EntityShootBowEvent> onBow;
-
-    public CustomEnchant(String key, String name, int maxLvl, Material enchantMaterial, EnchantmentTarget... target) {
-        super(NamespacedKey.minecraft(key));
-        this.name = name;
-        this.maxLvl = maxLvl;
-        this.target = target;
-        this.enchantMaterial = enchantMaterial;
+    public CustomEnchant(String key) {
+        super(new NamespacedKey(OakEnchants.getInstance(), key));
     }
 
-    public void setOnBow(Consumer<EntityShootBowEvent> onBow) {
-        this.onBow = onBow;
+    public abstract EnchantmentTarget[] getEnchantTargets();
+    public abstract boolean isEnchantItem(ItemStack stack);
+
+    public void onDamageEntity(EntityDamageByEntityEvent event, ItemStack item, int level) {
+        //ignore
+    }
+    public void onShootBow(EntityShootBowEvent event, ItemStack item, int level) {
+        //ignore
+    }
+    void load() {
+        //ignore
+    }
+    void unload() {
+        //ignore
     }
 
-    public void onBow(EntityShootBowEvent event) {
-        if (onBow != null) {
-            onBow.accept(event);
+
+    public static void loadAll() {
+        ENCHANTS = Arrays.asList(
+                new Decapitator(),
+                new MindArrows(),
+                new QuiteIncredible()
+        );
+        ENCHANTS.forEach(CustomEnchant::load);
+    }
+
+    public static void unloadAll() {
+        ENCHANTS.forEach(CustomEnchant::unload);
+    }
+
+
+    private static void register() {
+        boolean registered = Arrays.stream(Enchantment.values()).collect(Collectors.toList()).containsAll(ENCHANTS);
+
+        if (!registered)
+            ENCHANTS.forEach(CustomEnchant::registerEnchant);
+
+    }
+
+     private static void registerEnchant(Enchantment enchant) {
+        try {
+            Field f = Enchantment.class.getDeclaredField("acceptingNew");
+            f.setAccessible(true);
+            f.set(null, true);
+            Enchantment.registerEnchantment(enchant);
+            OakEnchants.getInstance().getLogger().info("Registered Enchantment " + enchant.getKey());
+        } catch (Exception e) {
+            OakEnchants.getInstance().getLogger().warning("Could not register Enchantment: " + enchant.getKey());
         }
     }
 
-    public void setOnDamage(Consumer<EntityDamageByEntityEvent> onDamage) {
-        this.onDamage = onDamage;
-    }
-
-    public void onDamage(EntityDamageByEntityEvent event) {
-        if (onDamage != null) {
-            onDamage.accept(event);
-        }
-    }
-
-    public Material getEnchantMaterial() {
-        return enchantMaterial;
-    }
-
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public int getMaxLevel() {
-        return maxLvl;
-    }
-
-    @Override
-    public int getStartLevel() {
-        return 0;
+    public boolean canEnchantItem(ItemStack item) {
+        return Arrays.stream(getEnchantTargets()).anyMatch(t -> t.includes(item.getType()));
     }
 
     @Override
     public EnchantmentTarget getItemTarget() {
-        return target[0];
+        return getEnchantTargets()[0];
     }
 
     @Override
@@ -87,11 +95,6 @@ public class CustomEnchant extends Enchantment {
     @Override
     public boolean conflictsWith(Enchantment other) {
         return false;
-    }
-
-    @Override
-    public boolean canEnchantItem(ItemStack item) {
-        return Arrays.stream(target).anyMatch(t -> t.includes(item.getType()));
     }
 
 }

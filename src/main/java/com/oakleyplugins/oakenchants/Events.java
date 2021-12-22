@@ -1,5 +1,6 @@
 package com.oakleyplugins.oakenchants;
 
+import com.oakleyplugins.oakenchants.enchants.MindArrows;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -17,10 +18,8 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
-import static com.oakleyplugins.oakenchants.OakEnchants.PLUGIN;
 import static com.oakleyplugins.oakenchants.Utils.Utils.enchantCustom;
-import static com.oakleyplugins.oakenchants.enchants.Enchants.ENCHANTS;
-import static com.oakleyplugins.oakenchants.enchants.Enchants.HOMING;
+import static com.oakleyplugins.oakenchants.enchants.CustomEnchant.ENCHANTS;
 
 public class Events implements org.bukkit.event.Listener {
     @EventHandler
@@ -33,7 +32,7 @@ public class Events implements org.bukkit.event.Listener {
             if (p.getEquipment().getItemInMainHand().getItemMeta() == null) return;
             ENCHANTS.forEach(enchant -> {
                 if (item.containsEnchantment(enchant))
-                    enchant.onDamage(e);
+                    enchant.onDamageEntity(e, item, item.getEnchantmentLevel(enchant));
             });
         }
     }
@@ -44,13 +43,13 @@ public class Events implements org.bukkit.event.Listener {
         if (e.getBow() == null) return;
         ENCHANTS.forEach(enchant -> {
             if (e.getBow().containsEnchantment(enchant))
-                enchant.onBow(e);
+                enchant.onShootBow(e, e.getBow(), e.getBow().getEnchantmentLevel(enchant));
         });
     }
 
     @EventHandler
     public void onHitGround(ProjectileHitEvent e) {
-        if (HOMING.remove(e.getEntity())) {
+        if (MindArrows.HOMING.remove(e.getEntity())) {
             if (e.getHitEntity() != null)
                 e.getEntity().getWorld().playSound(e.getEntity().getLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 2f);
         }
@@ -77,7 +76,7 @@ public class Events implements org.bukkit.event.Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
         if (e.isCancelled()) return;
-        Bukkit.getScheduler().runTask(PLUGIN, () -> {
+        Bukkit.getScheduler().runTask(OakEnchants.getInstance(), () -> {
             if (e.getInventory() instanceof AnvilInventory) {
                 AnvilInventory anvil = (AnvilInventory) e.getInventory();
                 ItemStack item0 = anvil.getItem(0);
@@ -86,7 +85,7 @@ public class Events implements org.bukkit.event.Listener {
                 if (item1 == null) return;
                 ENCHANTS.forEach(enchant -> {
                     if (item1.getAmount() == 1 &&
-                            item1.getType().equals(enchant.getEnchantMaterial()) &&
+                            enchant.isEnchantItem(item1) &&
                             enchant.canEnchantItem(item0)
                     ) {
                         ItemStack clone = item0.clone();

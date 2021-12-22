@@ -1,7 +1,7 @@
 package com.oakleyplugins.oakenchants.Utils;
 
+import com.oakleyplugins.oakenchants.OakEnchants;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.enchantments.Enchantment;
@@ -14,24 +14,30 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.*;
 
-import static com.oakleyplugins.oakenchants.OakEnchants.PLUGIN;
-import static com.oakleyplugins.oakenchants.enchants.Enchants.DECAPITATOR;
 
 public class Utils {
     public static void enchantCustom(ItemStack stack, int lvl, Enchantment enchant) {
-        if (stack.getItemMeta() != null) {
-            stack.addUnsafeEnchantment(enchant, lvl);
-            ItemMeta meta = stack.getItemMeta();
-            List<String> str = new ArrayList<>();
-            if (meta.getLore() != null) {
-                List<String> OldLore = meta.getLore();
-                OldLore.removeIf(s -> s.startsWith(enchant.getName()));
-                str.addAll(OldLore);
-            }
-            str.add(enchant.getName() + " " + RomanNumerals(lvl));
-            meta.setLore(str);
-            stack.setItemMeta(meta);
+        if (stack.getItemMeta() == null) return;
+        ItemMeta meta = stack.getItemMeta();
+
+        List<String> str = new ArrayList<>();
+        //remove old lore
+        if (meta.getLore() != null) {
+            List<String> oldLore = meta.getLore();
+            oldLore.removeIf(s -> s.startsWith(enchant.getName()));
+            str.addAll(oldLore);
         }
+
+        if(lvl <= 0) {
+            meta.removeEnchant(enchant);
+        } else {
+            str.add(enchant.getName() + " " + RomanNumerals(lvl));
+            stack.addUnsafeEnchantment(enchant, lvl);
+        }
+
+        meta.setLore(str);
+        stack.setItemMeta(meta);
+
     }
 
     public static ItemStack getSkull(Player player) {
@@ -47,28 +53,7 @@ public class Utils {
         }
     }
 
-    public static void handleLore(LivingEntity e) {
-        if (e instanceof Player) if (((Player) e).getGameMode().equals(GameMode.CREATIVE)) return;
-        ItemStack item = e.getEquipment().getItemInMainHand();
-        List<String> str = new ArrayList<>();
-        int lvl = item.removeEnchantment(DECAPITATOR);
-        lvl--;
-        if (lvl > 0) {
-            item.addUnsafeEnchantment(DECAPITATOR, lvl);
-            str.add("Decapitator " + RomanNumerals(lvl));
-        }
-        ItemMeta Imeta = item.getItemMeta();
-        if (Imeta.getLore() != null) {
-            List<String> OldLore = Imeta.getLore();
-            OldLore.removeIf(s -> s.startsWith("Decapitator"));
-            str.addAll(OldLore);
-        }
-        Imeta.setLore(str);
-        item.setItemMeta(Imeta);
-        if (!(e instanceof Player)) {
-            e.getEquipment().setItemInMainHand(item);
-        }
-    }
+
 
     public static String RomanNumerals(int Int) {
         LinkedHashMap<String, Integer> roman_numerals = new LinkedHashMap<>();
@@ -114,7 +99,7 @@ public class Utils {
     public static void spawnParticles(LivingEntity entity, int amount) {
         Random r = new Random();
         for (int i = 0; i < amount; i++) {
-            Bukkit.getScheduler().runTaskLater(PLUGIN, () ->
+            Bukkit.getScheduler().runTaskLater(OakEnchants.getInstance(), () ->
                             entity.getWorld().spawnParticle(Particle.NOTE, entity.getLocation().add(0, 1, 0), 1,
                                     r.nextGaussian(),
                                     r.nextGaussian(),
