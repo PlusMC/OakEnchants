@@ -1,11 +1,8 @@
 package com.oakleyplugins.oakenchants.enchants;
 
 import com.oakleyplugins.oakenchants.OakEnchants;
-import com.oakleyplugins.oakenchants.Utils.Utils;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import com.oakleyplugins.oakenchants.events.PlayerInteractEvents;
+import org.bukkit.*;
 import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -16,8 +13,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-
-import static com.oakleyplugins.oakenchants.Utils.Utils.spawnParticles;
 
 public class QuiteIncredible extends CustomEnchant {
     private static List<LivingEntity> NOTES;
@@ -61,7 +56,7 @@ public class QuiteIncredible extends CustomEnchant {
 
     @Override
     public void onDamageEntity(EntityDamageByEntityEvent e, ItemStack item, int level) {
-        if (Utils.isEventFatal(e)) {
+        if (PlayerInteractEvents.isEventFatal(e)) {
             LivingEntity entity = (LivingEntity) e.getDamager();
             if (!(e.getEntity() instanceof Player)) return;
 
@@ -82,6 +77,18 @@ public class QuiteIncredible extends CustomEnchant {
                 NOTES.remove(entity);
             }, 140);
             spawnParticles(entity, 140);
+        }
+    }
+
+    private void spawnParticles(LivingEntity entity, int amount) {
+        Random r = new Random();
+        for (int i = 0; i < amount; i++) {
+            Bukkit.getScheduler().runTaskLater(OakEnchants.getInstance(), () ->
+                            entity.getWorld().spawnParticle(Particle.NOTE, entity.getLocation().add(0, 1, 0), 1,
+                                    r.nextGaussian(),
+                                    r.nextGaussian(),
+                                    r.nextGaussian()),
+                    i);
         }
     }
 }

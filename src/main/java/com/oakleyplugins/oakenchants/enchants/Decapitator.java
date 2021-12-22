@@ -1,18 +1,21 @@
 package com.oakleyplugins.oakenchants.enchants;
 
 import com.oakleyplugins.oakenchants.OakEnchants;
-import com.oakleyplugins.oakenchants.Utils.Utils;
+import com.oakleyplugins.oakenchants.events.PlayerInteractEvents;
 import org.bukkit.*;
 import org.bukkit.enchantments.EnchantmentTarget;
-import org.bukkit.entity.*;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.util.Vector;
 
 import java.util.Random;
 
-import static com.oakleyplugins.oakenchants.Utils.Utils.enchantCustom;
-import static com.oakleyplugins.oakenchants.Utils.Utils.getSkull;
+import static com.oakleyplugins.oakenchants.Utils.EnchantUtils.enchantCustom;
 
 public class Decapitator extends CustomEnchant {
 
@@ -48,14 +51,14 @@ public class Decapitator extends CustomEnchant {
     @Override
     public void onDamageEntity(EntityDamageByEntityEvent e, ItemStack item, int level) {
         if (e.getEntity() instanceof Player)
-            if (Utils.isEventFatal(e)) {
+            if (PlayerInteractEvents.isEventFatal(e)) {
                 enchantCustom(item, level - 1, this);
                 playDeathEffect((Player) e.getEntity());
             }
     }
 
 
-    //anim
+    //animation
     //TODO: make this not suck
     private void playDeathEffect(Player player) {
         Location loc = player.getEyeLocation();
@@ -118,5 +121,18 @@ public class Decapitator extends CustomEnchant {
         Vector goTo = loc.toVector().subtract(entity.getLocation().toVector());
         goTo.normalize();
         entity.setVelocity(goTo.multiply(strength));
+    }
+
+    private ItemStack getSkull(Player player) {
+        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        try {
+            SkullMeta meta = (SkullMeta) item.getItemMeta();
+            assert meta != null;
+            meta.setOwningPlayer(player);
+            item.setItemMeta(meta);
+            return item;
+        } catch (Exception e) {
+            return item;
+        }
     }
 }

@@ -1,14 +1,29 @@
 package com.oakleyplugins.oakenchants;
 
 import com.oakleyplugins.oakenchants.enchants.CustomEnchant;
+import com.oakleyplugins.oakenchants.events.EnchantEvents;
+import com.oakleyplugins.oakenchants.events.OtherEvents;
+import com.oakleyplugins.oakenchants.events.PlayerInteractEvents;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Arrays;
+import java.util.List;
+
 public final class OakEnchants extends JavaPlugin {
+    static final List<Listener> LISTENERS = Arrays.asList(
+            new EnchantEvents(),
+            new PlayerInteractEvents(),
+            new OtherEvents()
+    );
 
     @Override
     public void onEnable() {
         CustomEnchant.loadAll();
-        getServer().getPluginManager().registerEvents(new Events(), getInstance());
+
+        LISTENERS.forEach(
+                listener -> getServer().getPluginManager().registerEvents(listener, this)
+        );
     }
 
     public static OakEnchants getInstance() {

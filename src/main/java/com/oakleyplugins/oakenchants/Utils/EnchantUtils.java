@@ -1,21 +1,17 @@
 package com.oakleyplugins.oakenchants.Utils;
 
-import com.oakleyplugins.oakenchants.OakEnchants;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Particle;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
-public class Utils {
+public class EnchantUtils {
+
     public static void enchantCustom(ItemStack stack, int lvl, Enchantment enchant) {
         if (stack.getItemMeta() == null) return;
         ItemMeta meta = stack.getItemMeta();
@@ -39,21 +35,6 @@ public class Utils {
         stack.setItemMeta(meta);
 
     }
-
-    public static ItemStack getSkull(Player player) {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
-        try {
-            SkullMeta meta = (SkullMeta) item.getItemMeta();
-            assert meta != null;
-            meta.setOwningPlayer(player);
-            item.setItemMeta(meta);
-            return item;
-        } catch (Exception e) {
-            return item;
-        }
-    }
-
-
 
     public static String RomanNumerals(int Int) {
         LinkedHashMap<String, Integer> roman_numerals = new LinkedHashMap<>();
@@ -88,23 +69,5 @@ public class Utils {
             sb.append(s);
         }
         return sb.toString();
-    }
-
-    public static boolean isEventFatal(EntityDamageByEntityEvent e) {
-        if (e.getEntity() instanceof LivingEntity)
-            return ((LivingEntity) e.getEntity()).getHealth() - e.getFinalDamage() <= 0;
-        return false;
-    }
-
-    public static void spawnParticles(LivingEntity entity, int amount) {
-        Random r = new Random();
-        for (int i = 0; i < amount; i++) {
-            Bukkit.getScheduler().runTaskLater(OakEnchants.getInstance(), () ->
-                            entity.getWorld().spawnParticle(Particle.NOTE, entity.getLocation().add(0, 1, 0), 1,
-                                    r.nextGaussian(),
-                                    r.nextGaussian(),
-                                    r.nextGaussian()),
-                    i);
-        }
     }
 }
